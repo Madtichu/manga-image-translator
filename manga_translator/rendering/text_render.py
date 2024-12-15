@@ -150,9 +150,9 @@ def add_color(bw_char_map, color, stroke_char_map, stroke_color):
     return bg#, alpha_char_map
 
 FALLBACK_FONTS = [
-    os.path.join(BASE_PATH, 'fonts/Arial-Unicode-Regular.ttf'),
-    os.path.join(BASE_PATH, 'fonts/msyh.ttc'),
-    os.path.join(BASE_PATH, 'fonts/msgothic.ttc'),
+    os.path.expanduser('~/.local/share/fonts/AnimeAce2.1BB.ttf'),
+    os.path.expanduser('~/.local/share/fonts/msyh.ttc'),
+    os.path.expanduser('~/.local/share/fonts/msgothic.ttc'),
 ]
 FONT_SELECTION: List[freetype.Face] = []
 font_cache = {}
@@ -346,7 +346,10 @@ def put_text_vertical(font_size: int, text: str, h: int, alignment: str, fg: Tup
     canvas_border = np.clip(canvas_border, 0, 255)
     line_box = add_color(canvas_text, fg, canvas_border, bg)
     # rect
-    x, y, w, h = cv2.boundingRect(canvas_border)
+    if bg is None :
+        x, y, w, h = cv2.boundingRect(canvas_text)
+    else :
+        x, y, w, h = cv2.boundingRect(canvas_border)
     return line_box[y:y+h, x:x+w]
 
 def select_hyphenator(lang: str):
@@ -733,8 +736,9 @@ def put_text_horizontal(font_size: int, text: str, width: int, height: int, alig
     canvas_border = np.clip(canvas_border, 0, 255)
     line_box = add_color(canvas_text, fg, canvas_border, bg)
 
-    x, y, w, h = cv2.boundingRect(canvas_border)
-    return line_box[y:y+h, x:x+w]
+    # rect
+    x, y, width, height = cv2.boundingRect(canvas_border)
+    return line_box[y:y+height, x:x+width]
 
 # def put_text(img: np.ndarray, text: str, line_count: int, x: int, y: int, w: int, h: int, fg: Tuple[int, int, int], bg: Optional[Tuple[int, int, int]]):
 #     pass
