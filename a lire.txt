@@ -1,0 +1,1 @@
+j'ai fait un gui qui se lance dans aprs installation normale il faut aussi dans manga-translator/translator modifier ne init et ajoute le nouveau module deep.
