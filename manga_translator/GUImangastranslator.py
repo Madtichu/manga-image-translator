@@ -43,7 +43,7 @@ def validate_inputs(box_threshold, text_threshold):
     except ValueError:
         raise ValueError("Les valeurs numériques doivent être valides (ex. : 0.5, 1.0).")
 
-def process_folder(root, start_folder, start_subfolder, translator="deep", language="FR", align_center=False, box_threshold=0.5, text_threshold=0.5, progress_bar=None):
+def process_folder(root, start_folder, start_subfolder, translator="deep", language="FR", align_center=False, box_threshold=0.5, text_threshold=0.5, progress_bar=None, save_text=False):
     """Traite tous les fichiers du dossier de départ et des sous-dossiers dans l'ordre alphanumérique."""
     if not os.path.exists(start_folder):
         messagebox.showerror("Erreur", f"Le dossier spécifié '{start_folder}' n'existe pas.")
@@ -64,6 +64,7 @@ def process_folder(root, start_folder, start_subfolder, translator="deep", langu
     ]
     optional_args = [
         ("--align-center", align_center),
+        ("--save-text", save_text),
     ]
     common_args.extend([arg for arg, condition in optional_args if condition])
 
@@ -114,7 +115,18 @@ def process_folder(root, start_folder, start_subfolder, translator="deep", langu
             print(f"Début du traitement du fichier : {file_path}")
             run_command(common_args + ["-i", file_path])
             print(f"Fichier traité avec succès : {file_path}")
+            
+            if save_text:
+                # Générer le nom du fichier de sauvegarde
+                #save_text_file = os.path.splitext(file_path)[0] + '_translated.txt'
 
+                # Vérifier si le fichier existe et le supprimer
+                if os.path.exists(save_text_file):
+                    os.remove(save_text_file)
+
+                with open(save_text_file, 'a', encoding='utf-8') as f:
+                    f.write(f"Texte extrait de {file_path}:\n")
+                    # Ajoutez ici le code pour extraire et écrire le texte dans le fichier
             if progress_bar:
                 root.after(0, update_progress_bar, progress_bar, i + 1, total_files)
 
@@ -147,6 +159,8 @@ def start_processing():
     align_center = align_center_var.get()
     box_threshold = box_threshold_var.get()
     text_threshold = text_threshold_var.get()
+    save_text = save_text_var.get()
+
     if not global_folder:
         messagebox.showwarning("Attention", "Veuillez sélectionner le dossier global avant de continuer.")
         return
@@ -154,7 +168,7 @@ def start_processing():
     start_button.config(state=tk.DISABLED)
 
     processing_thread = threading.Thread(target=process_folder, args=(
-        root, global_folder, start_subfolder, translator, language, align_center, box_threshold, text_threshold, progress_bar))
+        root, global_folder, start_subfolder, translator, language, align_center, box_threshold, text_threshold, progress_bar, save_text))
     processing_thread.start()
 
     root.after(100, check_processing_thread, processing_thread)
@@ -175,7 +189,7 @@ except Exception as e:
 # Création de l'interface graphique
 root = tk.Tk()
 root.title("FLEMME GUI DE Manga Translator")
-root.geometry("600x600")
+root.geometry("600x800")
 
 # Widgets pour sélectionner le dossier global
 global_folder_label = tk.Label(root, text="Dossier global contenant les fichiers :")
@@ -201,7 +215,7 @@ start_browse_button.pack(side=tk.RIGHT)
 translator_label = tk.Label(root, text="Traducteur :")
 translator_label.pack(pady=5)
 translator_var = tk.StringVar(value="deep")
-translator_menu = tk.OptionMenu(root, translator_var, "deep", "youdao", "baidu", "papago", "caiyun", "none")
+translator_menu = tk.OptionMenu(root, translator_var, "deep","correctionmanuel")
 translator_menu.pack()
 
 # Options de langue
@@ -233,6 +247,11 @@ text_threshold_entry = tk.Entry(root, textvariable=text_threshold_var)
 text_threshold_entry.pack()
 text_threshold_desc = tk.Label(root, text="Diminuez cette valeur pour inclure plus de zones de texte.", fg="gray", wraplength=400, justify="left")
 text_threshold_desc.pack()
+
+# Option de sauvegarde dans un fichier texte
+save_text_var = tk.BooleanVar(value=False)
+save_text_check = tk.Checkbutton(root, text="Sauvegarder le texte dans un fichier", variable=save_text_var)
+save_text_check.pack(pady=5)
 
 # Bouton de démarrage
 start_button = tk.Button(root, text="Démarrer le traitement", command=start_processing)
