@@ -116,17 +116,6 @@ def process_folder(root, start_folder, start_subfolder, translator="deep", langu
             run_command(common_args + ["-i", file_path])
             print(f"Fichier traité avec succès : {file_path}")
             
-            if save_text:
-                # Générer le nom du fichier de sauvegarde
-                #save_text_file = os.path.splitext(file_path)[0] + '_translated.txt'
-
-                # Vérifier si le fichier existe et le supprimer
-                if os.path.exists(save_text_file):
-                    os.remove(save_text_file)
-
-                with open(save_text_file, 'a', encoding='utf-8') as f:
-                    f.write(f"Texte extrait de {file_path}:\n")
-                    # Ajoutez ici le code pour extraire et écrire le texte dans le fichier
             if progress_bar:
                 root.after(0, update_progress_bar, progress_bar, i + 1, total_files)
 
